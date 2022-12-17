@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ceek.fun</title>
+    <style>
+        body {
+            width: 100vw;
+            height: 100vh;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        footer,
+        header {
+            height: 70px;
+            background-color: #f5f5f5;
+            width: 100vw;
+        }
+
+        header>div,footer>div {
+            line-height: 70px;
+            max-width: 978px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        main>div{
+            max-width: 978px;
+            margin: 0 auto;
+            line-height: 30px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        header {
+            font-family: "product sans","open sans",arial,sans-serif;
+            font-size: 30px;
+            color: #9fa2a6;
+        }
+
+        footer {
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="body">
+        <header>
+            <div>ceek.fun</div>
+        </header>
+        <main>
+            <div>
+                <h2>找不到页面</h2>
+                <p>找不到短网址(<span id="shortURL"></span>)</p>
+                <p>请确认您输入的短网址正确</p>
+            </div>
+        </main>
+    </div>
+    <footer>
+        <div>
+            高晟捷 <a href="https://beian.miit.gov.cn/">鲁ICP备2022004418号-3</a> <a href="https://www.12377.cn/">中国互联网违法和不良信息举报中心</a> 来自青岛，用<span style="color:red;">♥</span>制作
+        </div>
+    </footer>
+    <script>
+        document.getElementById('shortURL').innerText = window.location.href
+    </script>
+</body>
+
+</html>
