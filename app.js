@@ -4,12 +4,14 @@ const URL = require('url')
 const mysql = require('mysql')
 const cors = require('cors')
 
-const connection = mysql.createConnection({
-    host: 'localhost',
+let connection,connection1,connection2;
+
+const mysqlConf = {
+    host: '127.0.0.1',
     user: 'root',
     password: '123456',
     database: 'shorturl'
-})
+}
 
 const app = express()
 
@@ -17,9 +19,9 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '/public')));
 app.use(cors())
 
-const port = 3000
+const port = 3001
 
-const allowedHostnames = ['gaoshengjie.com', 'gaoshengjie.cn', 'gov.cn', 'edu.cn']
+const allowedHostnames = ['gaoshengjie.com', 'gaoshengjie.cn', '.gov.cn','.edu.cn']
 
 
 const getRandomString = () => {
@@ -44,7 +46,6 @@ const getRandomString = () => {
 }
 
 app.post('/create', (req, res) => {
-    connection.connect();
     const url = req.body.url;
     if (url) {
         const hostname = URL.parse(url).hostname
@@ -58,6 +59,8 @@ app.post('/create', (req, res) => {
             if (allow) {
                 // 是否已经记录了这个网址
                 let shortURL
+                connection = mysql.createConnection(mysqlConf)
+                connection.connect();
                 connection.query(`SELECT oldurl, shorturl FROM shorturl WHERE oldurl = "${url}"`, (err, res1) => {
                     if (err) {
                         console.error(err)
@@ -69,13 +72,17 @@ app.post('/create', (req, res) => {
                         // 一直筛选出不重复的短网址
                         const getshorturl = () => {
                             shortURL = getRandomString()
-                            connection.query(`SELECT oldurl, shorturl FROM shorturl WHERE shorturl = '${shortURL}'`, (err, res1) => {
+                            connection1 = mysql.createConnection(mysqlConf)
+                            connection1.connect();
+                            connection1.query(`SELECT oldurl, shorturl FROM shorturl WHERE shorturl = '${shortURL}'`, (err, res1) => {
                                 if (err) {
                                     console.error(err)
                                 }
                                 if (res1) {
                                     if (res1.length === 0) {
-                                        connection.query(`INSERT INTO shorturl (oldurl,shorturl) VALUES ('${url}','${shortURL}')`, err => {
+                                        connection2 = mysql.createConnection(mysqlConf)
+                                        connection2.connect();
+                                        connection2.query(`INSERT INTO shorturl (oldurl,shorturl) VALUES ('${url}','${shortURL}')`, err => {
                                             if (err) {
                                                 console.error(err)
                                             }
@@ -83,6 +90,8 @@ app.post('/create', (req, res) => {
                                                 code: 1,
                                                 url: shortURL
                                             })
+                                            connection2.end()
+                                            return;
                                         })
                                     } else {
                                         getshorturl();
@@ -90,16 +99,19 @@ app.post('/create', (req, res) => {
                                 } else {
                                     getshorturl();
                                 }
+                                connection1.end()
+                                return;
                             })
                         }
                         getshorturl()
-
                     } else {
                         res.json({
                             code: 1,
                             url: shortURL
                         })
                     }
+                    connection.end()
+                    return;
                 })
             } else {
                 res.json({
@@ -119,11 +131,11 @@ app.post('/create', (req, res) => {
             msg: '没有传入URL'
         })
     }
-    connection.end()
-    return;
 })
 
 app.get('/:url', (req, res) => {
+    connection = mysql.createConnection(mysqlConf)
+    connection.connect()
     const url = req.params.url
     connection.query(`SELECT oldurl, shorturl FROM shorturl WHERE shorturl = "${url}"`, (err, res1) => {
         if (err) {
@@ -134,16 +146,13 @@ app.get('/:url', (req, res) => {
         } else {
             res.sendFile(path.join(__dirname, './public/error.html'));
         }
+        connection.end()
         return;
     })
 })
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, './public/home.html'));
-})
-
-app.get('/a/a', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/sb.html'));
 })
 
 app.listen(port, () => {
