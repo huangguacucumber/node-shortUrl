@@ -10,7 +10,6 @@ const connection = mysql.createConnection({
     password: '123456',
     database: 'shorturl'
 })
-connection.connect();
 
 const app = express()
 
@@ -20,7 +19,7 @@ app.use(cors())
 
 const port = 3000
 
-const allowedHostnames = ['gaoshengjie.com', 'gaoshengjie.cn', 'gov.cn','edu.cn']
+const allowedHostnames = ['gaoshengjie.com', 'gaoshengjie.cn', 'gov.cn', 'edu.cn']
 
 
 const getRandomString = () => {
@@ -45,6 +44,7 @@ const getRandomString = () => {
 }
 
 app.post('/create', (req, res) => {
+    connection.connect();
     const url = req.body.url;
     if (url) {
         const hostname = URL.parse(url).hostname
@@ -83,7 +83,6 @@ app.post('/create', (req, res) => {
                                                 code: 1,
                                                 url: shortURL
                                             })
-                                            return;
                                         })
                                     } else {
                                         getshorturl();
@@ -91,7 +90,6 @@ app.post('/create', (req, res) => {
                                 } else {
                                     getshorturl();
                                 }
-                                return;
                             })
                         }
                         getshorturl()
@@ -101,31 +99,28 @@ app.post('/create', (req, res) => {
                             code: 1,
                             url: shortURL
                         })
-                        return;
                     }
-                    return;
                 })
             } else {
                 res.json({
                     code: 0,
                     msg: '主机名不被允许'
                 })
-                return;
             }
         } else {
             res.json({
                 code: 0,
                 msg: '没有主机名'
             })
-            return;
         }
     } else {
         res.json({
             code: 0,
             msg: '没有传入URL'
         })
-        return;
     }
+    connection.end()
+    return;
 })
 
 app.get('/:url', (req, res) => {
@@ -145,6 +140,10 @@ app.get('/:url', (req, res) => {
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, './public/home.html'));
+})
+
+app.get('/a/a', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/sb.html'));
 })
 
 app.listen(port, () => {
